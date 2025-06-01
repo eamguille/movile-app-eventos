@@ -3,17 +3,22 @@ import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useFacebookAuth } from '../../services/facebookAuth';
 import { auth } from '../../services/firebase';
+import { useGoogleAuth } from '../../services/googleAuth';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const { request, promptAsync } = useGoogleAuth();
+  const { request: fbRequest, promptAsync: fbPromptAsync } = useFacebookAuth();
+
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Firebase maneja el redireccionamiento automáticamente por onAuthStateChanged
+      // No redirigir manualmente. El layout se encarga.
     } catch (error) {
       Alert.alert('Error', 'Credenciales inválidas. Intenta nuevamente.');
       console.log(error);
@@ -40,6 +45,26 @@ export default function LoginScreen() {
       />
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Entrar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => promptAsync()}
+        disabled={!request}
+        style={{ backgroundColor: '#4285F4', padding: 15, borderRadius: 8, marginTop: 20 }}
+      >
+        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
+          Iniciar sesión con Google
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => fbPromptAsync()}
+        disabled={!fbRequest}
+        style={{ backgroundColor: '#3b5998', padding: 15, borderRadius: 8, marginTop: 10 }}
+      >
+        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
+          Iniciar sesión con Facebook
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push('/auth/register')}>

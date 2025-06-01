@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { useLocalSearchParams } from 'expo-router';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { auth, db } from '../../../services/firebase';
@@ -10,34 +10,29 @@ export default function EventDetailScreen() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [attending, setAttending] = useState(false);
-  const [attendees, setAttendees] = useState([]);
 
   const user = auth.currentUser;
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
+        setLoading(true);
+        setAttending(false);
+        
         const ref = doc(db, 'events', id);
         const snap = await getDoc(ref);
 
         if (snap.exists()) {
-          setEvent(snap.data());
+          const eventData = snap.data();
+          setEvent(eventData);
+
+          // ¿Está el usuario en la lista de asistentes?
+          if (user && eventData.attendees?.includes(user.email)) {
+            setAttending(true);
+          }
         } else {
           setEvent(null);
         }
-
-        // Verificar asistencia del usuario
-        if (user) {
-          const rsvpRef = doc(db, 'events', id, 'attendees', user.uid);
-          const rsvpSnap = await getDoc(rsvpRef);
-          setAttending(rsvpSnap.exists());
-        }
-
-        // Obtener lista de asistentes
-        const attendeesRef = collection(db, 'events', id, 'attendees');
-        const attendeesSnap = await getDocs(attendeesRef);
-        const attendeeList = attendeesSnap.docs.map(doc => doc.data());
-        setAttendees(attendeeList);
 
         setLoading(false);
       } catch (error) {
@@ -49,41 +44,54 @@ export default function EventDetailScreen() {
     fetchEvent();
   }, [id]);
 
-
-  const handleRSVP = async () => {
+  const handleToggleRSVP = async () => {
     if (!user) {
       Alert.alert('Inicia sesión para confirmar asistencia');
       return;
     }
 
     try {
-      const attendeeRef = doc(db, 'events', id, 'attendees', user.uid);
-      await setDoc(attendeeRef, {
-        userId: user.uid,
-        email: user.email,
-        timestamp: new Date().toISOString(),
-      });
+      const eventRef = doc(db, 'events', id);
 
-      setAttending(true);
-      Alert.alert('¡Asistencia confirmada!', 'Te hemos registrado para este evento');
-
-      // 📅 PROGRAMAR NOTIFICACIÓN LOCAL
-      const eventDate = new Date(event.date);
-      const notifyTime = new Date(eventDate.getTime() - 60 * 60 * 1000); // 1 hora antes
-
-      if (notifyTime > new Date()) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: `Recordatorio: ${event.title}`,
-            body: `Tu evento empieza en 1 hora.`,
-          },
-          trigger: notifyTime,
+      if (!attending) {
+        // Confirmar asistencia
+        await updateDoc(eventRef, {
+          attendees: arrayUnion(user.email),
         });
+        setAttending(true);
+
+        Alert.alert('¡Asistencia confirmada!', 'Te hemos registrado para este evento');
+
+        // Notificación local
+        const eventDate = new Date(event.date);
+        const notifyTime = new Date(eventDate.getTime() - 60 * 60 * 1000);
+
+        if (notifyTime > new Date()) {
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: `Recordatorio: ${event.title}`,
+              body: `Tu evento empieza en 1 hora.`,
+            },
+            trigger: notifyTime,
+          });
+        }
+
+      } else {
+        // Cancelar asistencia
+        await updateDoc(eventRef, {
+          attendees: arrayRemove(user.email),
+        });
+        setAttending(false);
+        Alert.alert('Asistencia cancelada');
       }
+
+      // Actualizar evento
+      const updatedSnap = await getDoc(eventRef);
+      setEvent(updatedSnap.data());
 
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'No se pudo confirmar tu asistencia');
+      Alert.alert('Error', 'No se pudo actualizar tu asistencia');
     }
   };
 
@@ -107,30 +115,26 @@ export default function EventDetailScreen() {
 
       <TouchableOpacity
         style={[styles.rsvpButton, attending && styles.attending]}
-        onPress={handleRSVP}
-        disabled={attending}
+        onPress={handleToggleRSVP}
       >
         <Text style={styles.rsvpText}>
-          {attending ? 'Asistencia confirmada' : 'Confirmar asistencia'}
+          {attending ? 'Cancelar asistencia' : 'Confirmar asistencia'}
         </Text>
       </TouchableOpacity>
 
-      {/* 👇 Lista de asistentes confirmados */}
+      {/* Lista de asistentes */}
       <View style={{ marginTop: 30 }}>
         <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 10 }}>
-          Asistentes confirmados ({attendees.length})
+          Asistentes confirmados ({event.attendees?.length || 0})
         </Text>
-        {attendees.length === 0 ? (
-          <Text>Nadie se ha registrado aún.</Text>
-        ) : (
-          attendees.map((a, idx) => (
-            <Text key={idx} style={{ marginBottom: 4 }}>
-              • {a.email}
-            </Text>
+        {event.attendees?.length > 0 ? (
+          event.attendees.map((email, idx) => (
+            <Text key={idx} style={{ marginBottom: 4 }}>• {email}</Text>
           ))
+        ) : (
+          <Text>Nadie se ha registrado aún.</Text>
         )}
       </View>
-
     </View>
   );
 }

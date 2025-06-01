@@ -19,7 +19,7 @@ export default function RegisterScreen() {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      // El redireccionamiento lo hace Firebase automáticamente al iniciar sesión
+      // No redirigir manualmente. El layout se encarga.
     } catch (error) {
       Alert.alert('Error', 'No se pudo crear la cuenta. Intenta nuevamente.');
       console.log(error);

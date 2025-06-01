@@ -1,32 +1,32 @@
-// app/_layout.jsx
+// app/_layout.js
 import * as Notifications from 'expo-notifications';
-import { Stack, useRouter } from 'expo-router';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { Slot, usePathname, useRouter } from 'expo-router';
+import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
 import { auth } from '../services/firebase';
 
 export default function RootLayout() {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
   const router = useRouter();
 
+  const pathname = usePathname();
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAuthenticated(!!user);
       setLoading(false);
+
+      if (user && pathname.startsWith('/auth')) {
+        router.replace('/');
+      } else if (!user && !pathname.startsWith('/auth')) {
+        router.replace('/auth/login');
+      }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  }, [pathname]);
 
   useEffect(() => {
     const configureNotifications = async () => {
@@ -34,8 +34,6 @@ export default function RootLayout() {
       if (status !== 'granted') {
         console.log('Permiso de notificación no concedido');
       }
-
-      // Configuración para Android
       if (Platform.OS === 'android') {
         Notifications.setNotificationChannelAsync('default', {
           name: 'default',
@@ -47,16 +45,13 @@ export default function RootLayout() {
     configureNotifications();
   }, []);
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {!user ? (
-        <>
-          <Stack.Screen name="auth/login" />
-          <Stack.Screen name="auth/register" />
-        </>
-      ) : (
-        <Stack.Screen name="(tabs)" />
-      )}
-    </Stack>
-  );
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return <Slot />; // Muestra la ruta correspondiente según la URL
 }
