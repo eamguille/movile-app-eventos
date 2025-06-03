@@ -5,6 +5,7 @@ export interface EventPostProps {
   title: string;
   textBody: string;
   imageUrl: string;
+  postId: string;
 }
 export default function EventPost({
   title,
@@ -34,7 +35,7 @@ export default function EventPost({
 
       <ShareButton
         message={`¡Mira este evento! ${title} - ${textBody}`}
-        url={"http://192.168.1.29:3000/iloveu<3"}
+        url={"http://192.168.1.33:3000/iloveu<3"}
       />
     </View>
   );

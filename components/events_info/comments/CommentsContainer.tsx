@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { doc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import {
   Button,
   FlatList,
@@ -7,9 +8,14 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { db } from "../../../services/firebase"; // Adjust the path as needed to where your db instance is exported
 import CommentComponent, { Comment, CommentModel } from "./Comment";
 
-export default function CommentsContainer() {
+export interface CommentsContainerProps {
+  postId: string; // ID del post al que pertenecen los comentarios
+}
+
+export default function CommentsContainer({ postId }: CommentsContainerProps) {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<CommentModel[]>([
     {
@@ -32,6 +38,23 @@ export default function CommentsContainer() {
     content: "",
   });
 
+  useEffect(() => {
+    const fetchComments = async () => {
+      // TODOOOOOOOOOOOOOOOOOOOOOOOOO: aqui se deberia hacer una peticion a la base de datos para obtener los comentarios del post
+      // Simulando una llamada a la base de datos
+      const docEvent = doc(db, "events", postId);
+      console.log("Fetching comments for postId:", docEvent);
+      const fetchedComments: CommentModel[] = [
+        {
+          id: "1",
+          content: "Comentario cargado desde la base de datos.",
+          createdAt: new Date().toISOString(),
+        },
+      ];
+      setComments(fetchedComments);
+    };
+    fetchComments();
+  }, [postId]);
   const handleAddComment = () => {
     // TODOOOOOOOOOOOOOOOOOOOOOOOOO: eeste es el comentario donde se recibe el comentario del usuario y se guarda en la base de datos
     const newCommentFromDB: CommentModel = {
@@ -45,9 +68,11 @@ export default function CommentsContainer() {
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       {/* Lista de comentarios */}
-      <View style={showComments ? { paddingBottom: 30 } : {}}>
+      <View
+        style={showComments ? { paddingBottom: 30, flex: 1, height: 100 } : {}}
+      >
         <Text style={styles.commentsTitle}>Comentarios (10):</Text>
         <Text
           style={styles.showCommentsTitle}
@@ -55,11 +80,11 @@ export default function CommentsContainer() {
             setShowComments(!showComments);
           }}
         >
-          {" "}
           Ver todos los comentarios
         </Text>
         {showComments && (
           <FlatList
+            style={{ flexGrow: 0 }}
             data={comments}
             renderItem={({ item }) => <CommentComponent comment={item} />}
             keyExtractor={(item) => item.id}

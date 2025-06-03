@@ -10,8 +10,9 @@ export default function PostScreen() {
         title="Campeones de la Champions League 2015"
         textBody="Barcelona el mejor equipo de futbol del mundo, y el mejor equipo de futbol de la historia. El mejor equipo de futbol del mundo, y el mejor equipo de futbol de la historia. El mejor equipo de futbol del mundo, y el mejor equipo de futbol de la historia."
         imageUrl="https://statics.somosjujuy.com.ar/2025/05/crop/68267c2702438__400x300.webp"
+        postId="1"
       />
-      <CommentsContainer />
+      <CommentsContainer postId="1" />
     </View>
   );
 }
@@ -21,5 +22,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
     flexGrow: 1,
+    flex: 1,
   },
 });
