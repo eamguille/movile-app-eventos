@@ -1,5 +1,7 @@
 # [Ver documento PDF](./PDF.pdf)
 
+Server auxiliar con Express: .[Express Server](https://github.com/rodlemus/events-portfolio)
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
