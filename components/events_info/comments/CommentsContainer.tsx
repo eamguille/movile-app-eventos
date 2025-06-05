@@ -1,5 +1,4 @@
-import { doc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   FlatList,
@@ -8,7 +7,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { db } from "../../../services/firebase"; // Adjust the path as needed to where your db instance is exported
 import CommentComponent, { Comment, CommentModel } from "./Comment";
 
 export interface CommentsContainerProps {
@@ -20,17 +18,17 @@ export default function CommentsContainer({ postId }: CommentsContainerProps) {
   const [comments, setComments] = useState<CommentModel[]>([
     {
       id: "1",
-      content: "Este es el contenido del comentario 1.",
+      content: "Fue una de las mejores temporadas de la historia.",
       createdAt: new Date().toISOString(),
     },
     {
       id: "2",
-      content: "Este es el contenido del comentario 2.",
+      content: "El barca era claro merecedor de esta copa.",
       createdAt: new Date().toISOString(),
     },
     {
       id: "3",
-      content: "Este es el contenido del comentario 3.",
+      content: "Visca Barca.",
       createdAt: new Date().toISOString(),
     },
   ]);
@@ -38,25 +36,7 @@ export default function CommentsContainer({ postId }: CommentsContainerProps) {
     content: "",
   });
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      // TODOOOOOOOOOOOOOOOOOOOOOOOOO: aqui se deberia hacer una peticion a la base de datos para obtener los comentarios del post
-      // Simulando una llamada a la base de datos
-      const docEvent = doc(db, "events", postId);
-      console.log("Fetching comments for postId:", docEvent);
-      const fetchedComments: CommentModel[] = [
-        {
-          id: "1",
-          content: "Comentario cargado desde la base de datos.",
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setComments(fetchedComments);
-    };
-    fetchComments();
-  }, [postId]);
   const handleAddComment = () => {
-    // TODOOOOOOOOOOOOOOOOOOOOOOOOO: eeste es el comentario donde se recibe el comentario del usuario y se guarda en la base de datos
     const newCommentFromDB: CommentModel = {
       id: Math.random().toString(), // Genera un ID único para el nuevo comentario
       content: newComment.content,
@@ -70,10 +50,10 @@ export default function CommentsContainer({ postId }: CommentsContainerProps) {
   return (
     <View style={{ flex: 1 }}>
       {/* Lista de comentarios */}
-      <View
-        style={showComments ? { paddingBottom: 30, flex: 1, height: 100 } : {}}
-      >
-        <Text style={styles.commentsTitle}>Comentarios (10):</Text>
+      <View style={showComments ? { paddingBottom: 10, flex: 1 } : {}}>
+        <Text style={styles.commentsTitle}>
+          Comentarios ({comments.length}):
+        </Text>
         <Text
           style={styles.showCommentsTitle}
           onPress={() => {
@@ -111,7 +91,6 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    padding: 10,
     borderRadius: 8,
     marginBottom: 10,
   },
@@ -119,15 +98,13 @@ const styles = StyleSheet.create({
   commentsTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
   },
   showCommentsTitle: {
     fontSize: 16,
     color: "gray",
-    marginBottom: 10,
-    paddingBottom: 10,
     textDecorationLine: "underline",
     cursor: "pointer",
+    marginBottom: 10,
   },
   comment: {
     backgroundColor: "#f0f0f0",

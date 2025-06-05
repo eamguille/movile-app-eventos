@@ -7,9 +7,9 @@ export default function PostScreen() {
   return (
     <View style={styles.container}>
       <EventPost
-        title="Campeones de la Champions League 2015"
-        textBody="Barcelona el mejor equipo de futbol del mundo, y el mejor equipo de futbol de la historia. El mejor equipo de futbol del mundo, y el mejor equipo de futbol de la historia. El mejor equipo de futbol del mundo, y el mejor equipo de futbol de la historia."
-        imageUrl="https://statics.somosjujuy.com.ar/2025/05/crop/68267c2702438__400x300.webp"
+        title="La Liga de Hansi Flick"
+        textBody="Hansi Flick llegó sin hacer ruido. Venía a sustituir a Xavi Hernández después de su rocambolesca salida que se venía telegrafiando desde enero de 2024 con sus idas y venidas. A Laporta siempre le gustó el alemán y a Deco también. Confiaron en él a pesar de su limitado currículum en el que tuvo un enorme éxito en el Bayern, pero fracasó al mando de la selección de su país. Era, por tanto, una apuesta de riesgo en un momento muy delicado del club maniatado como siempre por el 'Fair Play' a la hora de acercarse al mercado."
+        imageUrl="https://e00-especiales-marca.uecdn.es/futbol/images/barcelona/campeon-liga/2025/tema2-02.jpg"
         postId="1"
       />
       <CommentsContainer postId="1" />

@@ -1,4 +1,4 @@
-import { Alert, Button, Share } from "react-native";
+import { Alert, Button, Share, View } from "react-native";
 
 export interface ShareButtonProps {
   message: string;
@@ -16,5 +16,15 @@ export default function ShareButton({ message, url }: ShareButtonProps) {
       Alert.alert(error.message);
     }
   };
-  return <Button onPress={onShare} title="Share" />;
+  return (
+    <View
+      style={{
+        marginTop: 5,
+        marginBottom: 5,
+        width: "50%",
+      }}
+    >
+      <Button onPress={onShare} color={"#000"} title="Compartir" />
+    </View>
+  );
 }

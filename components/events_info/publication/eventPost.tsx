@@ -11,6 +11,7 @@ export default function EventPost({
   title,
   textBody,
   imageUrl,
+  postId,
 }: EventPostProps) {
   return (
     <View style={styles.post}>
@@ -27,15 +28,16 @@ export default function EventPost({
           marginTop: 10,
         }}
       />
-
-      <Text style={styles.text}>
-        Publicado el: {new Date().toLocaleDateString()}
-      </Text>
-      <Text style={styles.text}>Autor: Usuario</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Text style={styles.imageText}>
+          Publicado el: {new Date().toLocaleDateString()}
+        </Text>
+        <Text style={styles.imageText}>Autor: Usuario</Text>
+      </View>
 
       <ShareButton
         message={`¡Mira este evento! ${title} - ${textBody}`}
-        url={"http://192.168.1.33:3000/iloveu<3"}
+        url={"http://192.168.1.33:3000/events/" + postId}
       />
     </View>
   );
@@ -53,5 +55,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: "#333",
+  },
+  imageText: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 5,
   },
 });
